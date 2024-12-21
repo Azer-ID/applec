@@ -1,5 +1,5 @@
 import sys
-from enum import *
+from list import *
 
 label = {}
 
