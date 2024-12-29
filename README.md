@@ -1,2 +1,2 @@
-# Appled
-Appled MRC github repository
+# Applec
+Applec MRC github repository
