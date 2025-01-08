@@ -3,7 +3,7 @@ from func import *
 
 label = {}
 
-def parse(line: str, code_addr: int) -> list[str]:
+def parse(line: str, code_addr: int):
     binary = []
     line = replace_tabs(line.strip()).split()
 
@@ -53,7 +53,7 @@ def main() -> None:
                 try:
                     binary_line = parse(line, code_addr)
                     if binary_line:
-                        outf.write(' '.join(binary_line) + '\n')
+                        outf.write(''.join(binary_line) + '\n')
                         code_addr += 1
                 except ValueError as e:
                     print(f"{output_file}:{line_number}: Error: {e}")
