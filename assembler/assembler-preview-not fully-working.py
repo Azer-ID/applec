@@ -1,5 +1,4 @@
 import sys
-from enum import Enum
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import os
@@ -16,70 +15,19 @@ lines = []
 label = {}
 
 def parse(line, code_addr: int):
-    REG_LIST = dict([
-        ("R0", 0x0),
-        ("R1", 0x1),
-        ("R2", 0x2),
-        ("R3", 0x3),
-        ("R4", 0x4),
-        ("R5", 0x5),
-        ("R6", 0x6),
-        ("R7", 0x7),
-        ("R8", 0x8),
-        ("R9", 0x9),
-        ("R10", 0xA),
-        ("R11", 0xB),
-        ("R12", 0xC),
-        ("R13", 0xD),
-        ("R14", 0xE),
-        ("R15", 0xF)
-    ])
+    REG_LIST = dict([("R0", 0x0), ("R1", 0x1), ("R2", 0x2), ("R3", 0x3), ("R4", 0x4),
+                     ("R5", 0x5), ("R6", 0x6), ("R7", 0x7), ("R8", 0x8), ("R9", 0x9),
+                     ("R10", 0xA), ("R11", 0xB), ("R12", 0xC), ("R13", 0xD), ("R14", 0xE),
+                     ("R15", 0xF)])
 
-    INST_LIST = dict([
-        ("BREAK", 0x0),
-        ("NOP", 0x1),
-        ("HLT", 0x2),
-        ("STR", 0x3),
-        ("LD", 0x4),
-        ("MOV", 0x5),
-        ("ADD", 0x6),
-        ("SUB", 0x7),
-        ("INC", 0x8),
-        ("DEC", 0x9),
-        ("AND", 0xA),
-        ("OR", 0xB),
-        ("XOR", 0xC),
-        ("NOT", 0xD),
-        ("NOR", 0xE),
-        ("NAND", 0xF),
-        ("XNOR", 0x10),
-        ("SHL", 0x11),
-        ("SHR", 0x12),
-        ("JMP", 0x13),
-        ("PUT", 0x14),
-        ("STC", 0x15),
-        ("CLC", 0x16),
-        ("SWAP", 0x17),
-        ("RD", 0x18),
-        ("WD", 0x19),
-        ("WR", 0x1A),
-        ("CMP", 0x1B),
-        ("JE", 0x1C),
-        ("JNE", 0x1D),
-        ("JG", 0x1E),
-        ("JL", 0x1F),
-        ("JC", 0x20),
-        ("JZ", 0x21),
-        ("CALL", 0x22),
-        ("RET", 0x23),
-        ("IN", 0x24),
-        ("OUT", 0x25),
-        ("CF", 0x26),
-        ("NEG", 0x27)
-    ])
-
-    def replace_tabs(string: str) -> str:
-        return string.replace('\t', ' ')
+    INST_LIST = dict([("BREAK", 0x0), ("NOP", 0x1), ("HLT", 0x2), ("STR", 0x3), ("LD", 0x4),
+                      ("MOV", 0x5), ("ADD", 0x6), ("SUB", 0x7), ("INC", 0x8), ("DEC", 0x9),
+                      ("AND", 0xA), ("OR", 0xB), ("XOR", 0xC), ("NOT", 0xD), ("NOR", 0xE),
+                      ("NAND", 0xF), ("XNOR", 0x10), ("SHL", 0x11), ("SHR", 0x12), ("JMP", 0x13),
+                      ("PUT", 0x14), ("STC", 0x15), ("CLC", 0x16), ("SWAP", 0x17), ("RD", 0x18),
+                      ("WD", 0x19), ("WR", 0x1A), ("CMP", 0x1B), ("JE", 0x1C), ("JNE", 0x1D),
+                      ("JG", 0x1E), ("JL", 0x1F), ("JC", 0x20), ("JZ", 0x21), ("CALL", 0x22),
+                      ("RET", 0x23), ("IN", 0x24), ("OUT", 0x25), ("CF", 0x26), ("NEG", 0x27)])
 
     def find_inst(string: str) -> int:
         return INST_LIST.get(string, -1)
@@ -144,7 +92,8 @@ def main_assembler():
                         code_addr += 1
                 except ValueError as e:
                     print(f"{output_file}:{line_number}: Error: {e}")
-                    sys.exit(1)
+                    # Continue processing even after an error
+                    continue
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
@@ -198,8 +147,33 @@ class LineBasedEditor:
             for line in self.lines:
                 file.write(line + "\n")
 
-        # Now call the assembler function to generate the binary file
-        main_assembler()
+        # Set a predefined file name and open the save file dialog
+        predefined_name = "output-assembler.bin"
+        output_file_path = filedialog.asksaveasfilename(defaultextension=".bin", 
+                                                        initialfile=predefined_name,  # Predefined file name
+                                                        filetypes=[("Binary Files", "*.bin"), ("All Files", "*.*")])
+        if output_file_path:
+            try:
+                # Now call the assembler function to generate the binary file
+                code_addr = 0
+                with open(auto_save_file, "r") as inf, open(output_file_path, "w") as outf:
+                    for line_number, line in enumerate(inf, start=1):
+                        try:
+                            binary_line = parse(line, code_addr)
+                            if binary_line:
+                                outf.write(' '.join(binary_line) + '\n')
+                                code_addr += 1
+                        except ValueError as e:
+                            print(f"Error on line {line_number}: {e}")
+                            messagebox.showerror("Error", f"Error processing line {line_number}: {e}")
+                            return
+
+                # Show a message box with the path to the assembled file
+                messagebox.showinfo("Assembled", f"File successfully assembled and saved to:\n{output_file_path}")
+            except Exception as e:
+                messagebox.showerror("Error", f"An error occurred during assembly: {e}")
+
+
 
     def save_file(self):
         file_path = filedialog.asksaveasfilename(defaultextension=".txt", 
